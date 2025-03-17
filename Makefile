@@ -12,7 +12,6 @@ default: help
 venv:  ## create a virtual environment and install dependencies
 	@python3 -mvenv --upgrade-deps --prompt mondo venv
 	@$(PIP) install -e .[dev]
-.PHONY: venv
 
 lint:  ## run all linters (black, isort, mypy)
 	$(BLACK) mondo
@@ -20,8 +19,8 @@ lint:  ## run all linters (black, isort, mypy)
 	$(MYPY) mondo
 .PHONY: lint
 
-serve:  ## run a hot-reloading development server
-	$(FLASK) --app mondo run --reload --debug
+serve: venv  ## run a hot-reloading development server
+	$(FLASK) --app mondo run --host 0.0.0.0 --port 2505 --reload --debug
 .PHONY: serve
 
 build-clean:  ## clean up build directories
