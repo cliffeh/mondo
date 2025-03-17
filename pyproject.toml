@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mondo"
+version = "0.0.1"
+dependencies = ["flask==3.1.0"]
+requires-python = ">=3.8"
+authors = [{ name = "Cliff Snyder", email = "cliff.snyder@gmail.com" }]
+maintainers = [{ name = "Cliff Snyder", email = "cliff.snyder@gmail.com" }]
+description = "Terraform Workspace Manager"
+readme = "README.md"
+license = { text = "Apache License (2.0)" }
+
+[project.optional-dependencies]
+dev = ["black", "flake8", "mypy", "isort"] # pytest
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+
+[tool.isort]
+profile = "black"
+src_paths = ["mondo"]
+line_length = 88
+skip = ["venv", "build"]
+
+[tool.mypy]
+warn_return_any = true
+warn_unused_configs = true
+exclude = ["venv", "build"]
