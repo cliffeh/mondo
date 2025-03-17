@@ -9,29 +9,34 @@ MYPY=venv/bin/mypy
 
 default: help
 
-venv:  ## create a virtual environment and install dependencies
+venv $(FLASK):  ## create a virtual environment and install dependencies
 	@python3 -mvenv --upgrade-deps --prompt mondo venv
 	@$(PIP) install -e .[dev]
+.PHONY: venv
 
 lint:  ## run all linters (black, isort, mypy)
-	$(BLACK) mondo
-	$(ISORT) mondo
-	$(MYPY) mondo
+	@$(BLACK) src
+	@$(ISORT) src
+	@$(MYPY) src
 .PHONY: lint
 
-serve: venv  ## run a hot-reloading development server
-	$(FLASK) --app mondo run --host 0.0.0.0 --port 2505 --reload --debug
+serve: $(FLASK)  ## run a hot-reloading development server
+	@$(FLASK) --app mondo run --host 0.0.0.0 --port 2505 --reload --debug
 .PHONY: serve
 
+instance-clean: ## clean up the instance directory
+	@rm -rf instance
+.PHONY: instance-clean
+
 build-clean:  ## clean up build directories
-	@rm -rf build mondo.egg-info
+	@rm -rf build src/mondo.egg-info src/mondo/__pycache__
 .PHONY: build-clean
 
 venv-clean:  ## delete the virtual environment
 	@rm -rf venv
 .PHONY: venv-clean
 
-realclean: build-clean venv-clean ## clean up All the Things
+realclean: build-clean instance-clean venv-clean ## clean up All the Things
 .PHONY: realclean
 
 help: ## show this help

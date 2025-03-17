@@ -1,7 +1,6 @@
 import os
 
 from flask import Blueprint
-
 from mondo.util import payload
 
 bp = Blueprint("sensors", __name__, url_prefix="/sensors")
@@ -19,6 +18,8 @@ def get_temp():
             ) as typefile:
                 temp = tempfile.read().strip()
                 type = typefile.read().strip()
+                # NB this could mean overwriting a previous value if there are
+                # multiple sensors with the same name
                 temps[type] = temp
             i += 1
         except FileNotFoundError:
