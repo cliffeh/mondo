@@ -1,9 +1,16 @@
 import os
+import random
 
 from flask import Blueprint
 from mondo.util import payload
 
 bp = Blueprint("sensors", __name__, url_prefix="/sensors")
+
+
+@bp.route("/rand", methods=("GET",))
+def get_rand():
+    """Get random number (for testing)"""
+    return payload({"rand": random.randint(20000, 90000)})
 
 
 @bp.route("/temp", methods=("GET",))
