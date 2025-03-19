@@ -23,7 +23,7 @@ def get_temp():
             with open(f"/sys/class/thermal/thermal_zone{i}/temp") as tempfile, open(
                 f"/sys/class/thermal/thermal_zone{i}/type"
             ) as typefile:
-                temp = tempfile.read().strip()
+                temp = float(tempfile.read().strip()) / 1000.0  # convert to degrees C
                 type = typefile.read().strip()
                 # NB this could mean overwriting a previous value if there are
                 # multiple sensors with the same name

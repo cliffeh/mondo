@@ -3,16 +3,16 @@
 
 <head>
     <meta charset="utf-8">
-    <title>D3 v5 Live Line Chart</title>
+    <title>mondo</title>
     <script src="https://d3js.org/d3.v5.min.js"></script>
 </head>
 
 <body>
     <script>
         const margin = { top: 20, right: 30, bottom: 30, left: 50 },
-            width = 600 - margin.left - margin.right,
+            width = 1200 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
-            n = 50, // Number of data points
+            n = 300, // Number of data points
             duration = 1000; // Update interval in ms
 
         const now = new Date(Date.now() - duration);
@@ -96,7 +96,7 @@
             y.domain([d3.min(data, d => d.value) * 0.9, d3.max(data, d => d.value) * 1.1]); // Adjust Y range
 
             // Update line path (but do NOT animate it directly)
-            path.datum(data).attr("d", line);
+            path.datum(data).attr("d", line).attr("transform", null);
 
             // Update X-axis
             xAxis.transition()
