@@ -1,5 +1,3 @@
-import os
-
 from flask import Flask
 
 from .sensors import bp as sensors_bp
