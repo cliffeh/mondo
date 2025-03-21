@@ -10,7 +10,7 @@ bp = Blueprint("sensors", __name__, url_prefix="/sensors")
 @bp.route("/rand", methods=("GET",))
 def get_rand():
     """Get random number (for testing)"""
-    return payload({"rand": random.randint(20000, 90000)})
+    return payload({"rand": float(random.randint(20000, 90000)) / 1000.0})
 
 
 @bp.route("/temp", methods=("GET",))

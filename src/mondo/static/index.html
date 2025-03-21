@@ -18,7 +18,7 @@
         // Initial time range
         var now = new Date(Date.now() - duration);
 
-        var data = []; // d3.range(n).map(function (i) { return { "time": new Date(now - (n - i - 1) * duration), "value": NaN }; });
+        var data = d3.range(n).map(function (i) { return { "time": new Date(now - (n - i - 1) * duration), "value": NaN }; });
 
         // Scales
         const x = d3.scaleTime()
@@ -76,8 +76,8 @@
         // Fetch data from API
         async function fetchData() {
             try {
-                const response = await d3.json("/sensors/load");
-                const newPoint = { time: new Date(), value: response.values["1m"] };
+                const response = await d3.json("/sensors/rand");
+                const newPoint = { time: new Date(), value: response.values.rand };
 
                 updateChart(newPoint);
             } catch (error) {
@@ -98,7 +98,7 @@
             y.domain([d3.min(data, d => d.value) * 0.9, d3.max(data, d => d.value) * 1.1]); // Adjust Y range
 
             // redraw the line
-            svg.select(".line")
+            svg.selectAll(".line")
                 // .transition()
                 // .duration(duration)
                 // .ease(d3.easeLinear)
