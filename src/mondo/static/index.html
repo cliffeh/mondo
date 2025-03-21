@@ -15,26 +15,26 @@
             n = 20, // Number of data points
             duration = 1000; // Update interval in ms
 
-        // Initial time range
-        var now = new Date(Date.now() - duration);
-
-        var data = d3.range(n).map(function (i) { return { "time": new Date(now - (n - i - 1) * duration), "value": NaN }; });
-
         // Scales
-        const x = d3.scaleTime()
-            .domain([now - (n - 2) * duration, now - duration])
+        const x = d3.scaleLinear()
+            .domain([0, n - 2])
             .range([0, width]);
 
-        const y = d3.scaleLinear()
+        var now = Date.now();
+        var timeX = d3.scaleTime()
+            .domain([new Date(now - n * duration), new Date(now - duration)])
+            .range([0, width]); // Initial range (will update dynamically)
+
+        var y = d3.scaleLinear()
             .domain([0, 100]) // Initial range (will update dynamically)
             .range([height, 0]);
 
         // Line generator
         const line = d3.line()
             .curve(d3.curveBasis)
-            .x(d => x(d.time))
-            .y(d => y(d.value))
-            .defined(d => !isNaN(d.value)); // Only draw line for defined values
+            .x(function (d, i) { return x(i); })
+            .y(function (d, i) { return y(d); })
+            .defined(d => !isNaN(d)); // Omit NaN values
 
         // Create SVG
         const svg = d3.select("body").append("svg")
@@ -67,80 +67,54 @@
 
         const path = lineContainer
             .append("path")
-            .datum(data)
+            .datum(d3.range(n).map(() => NaN))
             .attr("class", "line")
             .style("fill", "none")
             .style("stroke", "steelblue")
-            .style("stroke-width", 2);
+            .style("stroke-width", 2)
+            .transition()
+            .on("start", tick);
 
-        // Fetch data from API
-        async function fetchData() {
-            try {
-                const response = await d3.json("/sensors/rand");
-                const newPoint = { time: new Date(), value: response.values.rand };
+        function tick(data) {
+            d3.json("/sensors/rand").then(function (result) {
+                // Push a new data point onto the back.
 
-                updateChart(newPoint);
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            }
+                data.push(result.values.rand);
+                // console.log(new Date(), result.values.rand);
+
+                y.domain([d3.min(data, d => d) * 0.9, d3.max(data, d => d) * 1.1]); // Adjust Y range
+                now = Date.now();
+                timeX.domain([new Date(now - n * duration), new Date(now - duration)]);
+
+                // Redraw the line.
+                d3.select(".line")
+                    .attr("d", line)
+                    .attr("transform", null)
+                    .transition() // ...and slide it to the left
+                    .duration(duration)
+                    .ease(d3.easeLinear)
+                    .attr("transform", "translate(" + x(-1) + ",0)")
+                    .on("end", tick);
+
+                // adjust the x axis
+                xAxis
+                    .transition()
+                    .duration(duration)
+                    .ease(d3.easeLinear)
+                    .call(d3.axisBottom(timeX));
+
+                // adjust the y axis
+                yAxis
+                    .transition()
+                    .duration(duration)
+                    .ease(d3.easeLinear)
+                    .call(d3.axisLeft(y));
+
+                // Pop the old data point off the front.
+                data.shift();
+            });
+
         }
-
-        function updateChart(newPoint) {
-            data.push(newPoint);
-            if (data.length < 2) {
-                // If we don't have enough data points, just push the new point and return
-                return;
-            }
-
-            // Update scales dynamically
-            now = new Date();
-            x.domain([now - (n - 2) * duration, now - duration]);
-            y.domain([d3.min(data, d => d.value) * 0.9, d3.max(data, d => d.value) * 1.1]); // Adjust Y range
-
-            // redraw the line
-            svg.selectAll(".line")
-                // .transition()
-                // .duration(duration)
-                // .ease(d3.easeLinear)
-                .attr("d", line);
-            // .attr("transform", null);
-
-            // Update line path
-            // path
-            //     .transition()
-            //     // .duration(duration)
-            //     // .ease(d3.easeLinear)
-            //     .attr("transform", `translate(${x(now - (n - 1) * duration)})`);
-
-            // Update X-axis
-            xAxis
-                // .transition()
-                // .duration(duration)
-                // .ease(d3.easeLinear)
-                .call(d3.axisBottom(x));
-
-            // Update Y-axis smoothly
-            yAxis
-                // .transition()
-                // .duration(duration)
-                // .ease(d3.easeLinear)
-                .call(d3.axisLeft(y));
-
-            // Keep only the last 'n' data points
-            if (data.length > n) data.shift();
-
-            // Shift the entire line container left to create the scrolling effect
-            // lineContainer
-            //     .transition()
-            //     .duration(duration)
-            //     .ease(d3.easeLinear)
-            //     .attr("transform", `translate(${x(now - (n - 2) * duration)})`);
-        }
-
-        // Start fetching data every second
-        fetchData();
-        setInterval(fetchData, duration);
-
     </script>
 </body>
 
