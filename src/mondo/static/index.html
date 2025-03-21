@@ -18,7 +18,7 @@
         // Initial time range
         var now = new Date(Date.now() - duration);
 
-        var data = []; // d3.range(n).map(function (i) { return { "time": new Date(now - (n - i - 1) * duration), "value": 0 }; });
+        var data = []; // d3.range(n).map(function (i) { return { "time": new Date(now - (n - i - 1) * duration), "value": NaN }; });
 
         // Scales
         const x = d3.scaleTime()
@@ -33,7 +33,8 @@
         const line = d3.line()
             .curve(d3.curveBasis)
             .x(d => x(d.time))
-            .y(d => y(d.value));
+            .y(d => y(d.value))
+            .defined(d => !isNaN(d.value)); // Only draw line for defined values
 
         // Create SVG
         const svg = d3.select("body").append("svg")
@@ -99,8 +100,8 @@
 
             // redraw the line
             svg.select(".line")
-                .attr("d", line);
-            // .attr("transform", null);
+                .attr("d", line)
+                .attr("transform", null);
 
             // Update line path
             path
