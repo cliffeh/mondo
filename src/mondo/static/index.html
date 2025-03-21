@@ -12,7 +12,7 @@
         const margin = { top: 20, right: 30, bottom: 30, left: 50 },
             width = 1200 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
-            n = 300, // Number of data points
+            n = 20, // Number of data points
             duration = 1000; // Update interval in ms
 
         // Initial time range
@@ -62,8 +62,10 @@
             .call(d3.axisLeft(y));
 
         // Container for the line (will move to create the scrolling effect)
-        const path = svg.append("g")
-            .attr("clip-path", "url(#clip)")
+        const lineContainer = svg.append("g")
+            .attr("clip-path", "url(#clip)");
+
+        const path = lineContainer
             .append("path")
             .datum(data)
             .attr("class", "line")
@@ -84,9 +86,9 @@
         }
 
         function updateChart(newPoint) {
+            data.push(newPoint);
             if (data.length < 2) {
                 // If we don't have enough data points, just push the new point and return
-                data.push(newPoint);
                 return;
             }
 
@@ -95,31 +97,31 @@
             x.domain([now - (n - 2) * duration, now - duration]);
             y.domain([d3.min(data, d => d.value) * 0.9, d3.max(data, d => d.value) * 1.1]); // Adjust Y range
 
-            // Append new data point
-            data.push(newPoint);
-
             // redraw the line
             svg.select(".line")
-                .attr("d", line)
-                .attr("transform", null);
-
-            // Update line path
-            path
-                .transition()
+                // .transition()
                 // .duration(duration)
                 // .ease(d3.easeLinear)
-                .attr("transform", `translate(${x(now - (n - 1) * duration)})`);
+                .attr("d", line);
+            // .attr("transform", null);
+
+            // Update line path
+            // path
+            //     .transition()
+            //     // .duration(duration)
+            //     // .ease(d3.easeLinear)
+            //     .attr("transform", `translate(${x(now - (n - 1) * duration)})`);
 
             // Update X-axis
             xAxis
-                .transition()
+                // .transition()
                 // .duration(duration)
                 // .ease(d3.easeLinear)
                 .call(d3.axisBottom(x));
 
             // Update Y-axis smoothly
             yAxis
-                .transition()
+                // .transition()
                 // .duration(duration)
                 // .ease(d3.easeLinear)
                 .call(d3.axisLeft(y));
@@ -132,7 +134,7 @@
             //     .transition()
             //     .duration(duration)
             //     .ease(d3.easeLinear)
-            //     .attr("transform", `translate(${x(new Date(Date.now() - (n - 2) * duration))},0)`);
+            //     .attr("transform", `translate(${x(now - (n - 2) * duration)})`);
         }
 
         // Start fetching data every second
