@@ -21,7 +21,7 @@ lint:  ## run all linters (black, isort, mypy)
 .PHONY: lint
 
 serve: $(FLASK)  ## run a hot-reloading development server
-	@$(FLASK) --app mondo run --host 0.0.0.0 --port 2505 --reload --debug
+	@$(FLASK) --app mondo run --host :: --port 2505 --reload --debug
 .PHONY: serve
 
 instance-clean: ## clean up the instance directory
