@@ -30,23 +30,25 @@
         const margin = { top: 20, right: 20, bottom: 20, left: 40 },
             width = 1200 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
-            n = 60, // Number of data points
+            n = 20, // Number of data points
             duration = 1000; // Update interval in ms
 
         const load = ["1m", "5m", "15m"];
 
         // Scales
+        // 1, 18
+        // now - (n-1) * duration, now - 2 * duration
         const x = d3.scaleLinear()
             .domain([1, n - 2])
             .range([0, width]);
 
         var now = Date.now();
         var timeX = d3.scaleTime()
-            .domain([new Date(now - n * duration), new Date(now - duration)])
+            .domain([new Date(now - (n - 1) * duration), new Date(now - 2 * duration)])
             .range([0, width]); // Initial range (will update dynamically)
 
         var y = d3.scaleLinear()
-            .domain([0, 100]) // Initial range (will update dynamically)
+            .domain([0, 0]) // Initial range (will update dynamically)
             .range([height, 0]);
 
         // Line generator
@@ -98,6 +100,7 @@
             .on("start", tick);
 
         function tick(data, i, g) {
+            // console.log(d3.selectAll(g));
             d3.json("/sensors/load").then(function (result) {
                 const maxima = Object.entries(result.values).map(([k, v]) => {
                     var load = d3.select(`.line._${k}`);
@@ -121,7 +124,8 @@
 
                 y.domain([0, d3.max(maxima, d => d) * 1.1]); // Adjust Y range
                 now = Date.now();
-                timeX.domain([new Date(now - n * duration), new Date(now - duration)]);
+                // console.log(new Date(now), maxima);
+                timeX.domain([new Date(now - (n - 2) * duration), new Date(now - 2 * duration)]);
 
                 // adjust the x axis
                 xAxis
