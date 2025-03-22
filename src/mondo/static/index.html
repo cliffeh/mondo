@@ -42,12 +42,12 @@
             .domain([1, n - 2])
             .range([0, width]);
 
-        var now = Date.now();
-        var timeX = d3.scaleTime()
+        let now = Date.now();
+        let timeX = d3.scaleTime()
             .domain([new Date(now - (n - 1) * duration), new Date(now - 2 * duration)])
             .range([0, width]); // Initial range (will update dynamically)
 
-        var y = d3.scaleLinear()
+        let y = d3.scaleLinear()
             .domain([0, 0]) // Initial range (will update dynamically)
             .range([height, 0]);
 
@@ -76,7 +76,7 @@
         const xAxis = svg.append("g")
             .attr("class", "x-axis")
             .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(x));
+            .call(d3.axisBottom(timeX));
 
         // Y-Axis
         const yAxis = svg.append("g")
@@ -103,8 +103,8 @@
             // console.log(d3.selectAll(g));
             d3.json("/sensors/load").then(function (result) {
                 const maxima = Object.entries(result.values).map(([k, v]) => {
-                    var load = d3.select(`.line._${k}`);
-                    var data = load.datum();
+                    let load = d3.select(`.line._${k}`);
+                    let data = load.datum();
 
                     // push the new value onto the back
                     data.push(v);
@@ -124,8 +124,8 @@
 
                 y.domain([0, d3.max(maxima, d => d) * 1.1]); // Adjust Y range
                 now = Date.now();
-                // console.log(new Date(now), maxima);
-                timeX.domain([new Date(now - (n - 2) * duration), new Date(now - 2 * duration)]);
+                console.log(new Date(now), maxima);
+                timeX.domain([new Date(now - (n - 1) * duration), new Date(now - 2 * duration)]);
 
                 // adjust the x axis
                 xAxis
