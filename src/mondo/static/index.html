@@ -9,15 +9,15 @@
 
 <body>
     <script>
-        const margin = { top: 20, right: 30, bottom: 30, left: 50 },
-            width = 1200 - margin.left - margin.right,
+        const margin = { top: 20, right: 20, bottom: 20, left: 40 },
+            width = 800 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
             n = 20, // Number of data points
             duration = 1000; // Update interval in ms
 
         // Scales
         const x = d3.scaleLinear()
-            .domain([0, n - 2])
+            .domain([1, n - 2])
             .range([0, width]);
 
         var now = Date.now();
@@ -78,11 +78,10 @@
         function tick(data) {
             d3.json("/sensors/rand").then(function (result) {
                 // Push a new data point onto the back.
-
                 data.push(result.values.rand);
                 // console.log(new Date(), result.values.rand);
 
-                y.domain([d3.min(data, d => d) * 0.9, d3.max(data, d => d) * 1.1]); // Adjust Y range
+                y.domain([0, d3.max(data, d => d) * 1.1]); // Adjust Y range
                 now = Date.now();
                 timeX.domain([new Date(now - n * duration), new Date(now - duration)]);
 
@@ -93,7 +92,7 @@
                     .transition() // ...and slide it to the left
                     .duration(duration)
                     .ease(d3.easeLinear)
-                    .attr("transform", "translate(" + x(-1) + ",0)")
+                    .attr("transform", "translate(" + x(0) + ",0)")
                     .on("end", tick);
 
                 // adjust the x axis
@@ -113,7 +112,6 @@
                 // Pop the old data point off the front.
                 data.shift();
             });
-
         }
     </script>
 </body>
