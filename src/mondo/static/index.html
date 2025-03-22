@@ -5,15 +5,35 @@
     <meta charset="utf-8">
     <title>mondo</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        g.load .line {
+            fill: none;
+            stroke-width: 1.5px;
+        }
+
+        g.load .line._1m {
+            stroke: #000;
+        }
+
+        g.load .line._5m {
+            stroke: #777;
+        }
+
+        g.load .line._15m {
+            stroke: #ccc;
+        }
+    </style>
 </head>
 
 <body>
     <script>
         const margin = { top: 20, right: 20, bottom: 20, left: 40 },
-            width = 800 - margin.left - margin.right,
+            width = 1200 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
-            n = 20, // Number of data points
+            n = 60, // Number of data points
             duration = 1000; // Update interval in ms
+
+        const load = ["1m", "5m", "15m"];
 
         // Scales
         const x = d3.scaleLinear()
@@ -63,37 +83,45 @@
 
         // Container for the line (will move to create the scrolling effect)
         const lineContainer = svg.append("g")
-            .attr("clip-path", "url(#clip)");
+            .attr("clip-path", "url(#clip)")
+            .append("g")
+            .attr("class", "load");
 
-        const path = lineContainer
+        lineContainer.selectAll(".line")
+            .data(load.map(() => d3.range(n).map(() => NaN)))
+            .enter()
             .append("path")
-            .datum(d3.range(n).map(() => NaN))
-            .attr("class", "line")
-            .style("fill", "none")
-            .style("stroke", "steelblue")
-            .style("stroke-width", 2)
-            .transition()
+            .attr("class", (d, i) => `line _${load[i]}`)
+            .attr("d", line);
+
+        lineContainer.transition()
             .on("start", tick);
 
-        function tick(data) {
-            d3.json("/sensors/rand").then(function (result) {
-                // Push a new data point onto the back.
-                data.push(result.values.rand);
-                // console.log(new Date(), result.values.rand);
+        function tick(data, i, g) {
+            d3.json("/sensors/load").then(function (result) {
+                const maxima = Object.entries(result.values).map(([k, v]) => {
+                    var load = d3.select(`.line._${k}`);
+                    var data = load.datum();
 
-                y.domain([0, d3.max(data, d => d) * 1.1]); // Adjust Y range
+                    // push the new value onto the back
+                    data.push(v);
+
+                    // draw the new point
+                    load
+                        .attr("d", line)
+                        .attr("transform", null)
+                        .transition() // ...and slide it to the left
+                        .duration(duration)
+                        .ease(d3.easeLinear)
+                        .attr("transform", "translate(" + x(0) + ",0)")
+                        .on("end", (d) => d.shift()); // pop the old data point off the front
+
+                    return d3.max(data, d => d);
+                });
+
+                y.domain([0, d3.max(maxima, d => d) * 1.1]); // Adjust Y range
                 now = Date.now();
                 timeX.domain([new Date(now - n * duration), new Date(now - duration)]);
-
-                // Redraw the line.
-                d3.select(".line")
-                    .attr("d", line)
-                    .attr("transform", null)
-                    .transition() // ...and slide it to the left
-                    .duration(duration)
-                    .ease(d3.easeLinear)
-                    .attr("transform", "translate(" + x(0) + ",0)")
-                    .on("end", tick);
 
                 // adjust the x axis
                 xAxis
@@ -109,8 +137,11 @@
                     .ease(d3.easeLinear)
                     .call(d3.axisLeft(y));
 
-                // Pop the old data point off the front.
-                data.shift();
+                // schedule next tick
+                d3.select(g[i])
+                    .transition()
+                    .duration(duration)
+                    .on("end", tick);
             });
         }
     </script>

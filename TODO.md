@@ -1,5 +1,5 @@
 # TODO
 
 * enable graphing multiple metrics, from multiple machines
-* change line color when above some threshold?
-  * <https://d3js.org/d3-scale-chromatic/diverging#schemeRdYlGn>
+* chart legends
+* encapsulate the logic in a "sensor" object to make it simpler to add new ones
