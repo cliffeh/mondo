@@ -112,7 +112,7 @@
         function tick(data, i, g) {
             // console.log(d3.selectAll(g));
             d3.json("/metrics/load").then(function (result) {
-                const maxima = Object.entries(result.values).map(([k, v]) => {
+                const maxima = Object.entries(result).map(([k, v]) => {
                     let load = d3.select(`.line._${k}`);
                     let data = load.datum();
 
