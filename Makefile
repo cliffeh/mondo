@@ -24,11 +24,7 @@ serve: $(FLASK)  ## run a hot-reloading development server
 	@$(FLASK) --app mondo run --host :: --port 2505 --reload --debug
 .PHONY: serve
 
-instance-clean: ## clean up the instance directory
-	@rm -rf instance
-.PHONY: instance-clean
-
-build-clean:  ## clean up build directories
+clean:  ## clean up build directories and cache files
 	@rm -rf build src/mondo.egg-info src/mondo/__pycache__
 .PHONY: build-clean
 
@@ -36,10 +32,10 @@ venv-clean:  ## delete the virtual environment
 	@rm -rf venv
 .PHONY: venv-clean
 
-realclean: build-clean instance-clean venv-clean ## clean up All the Things
+realclean: build-clean venv-clean  ## clean up All the Things
 .PHONY: realclean
 
-help: ## show this help
+help:  ## show this help
 	@echo "\nSpecify a command. The choices are:\n"
 	@grep -E '^[0-9a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[0;36m%-12s\033[m %s\n", $$1, $$2}'
 	@echo ""
