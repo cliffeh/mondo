@@ -31,19 +31,28 @@
         const margin = { top: 20, right: 40, bottom: 20, left: 40 },
             width = 1200 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
-            n = 20, // Number of data points
-            duration = 1000; // Update interval in ms
+            duration = 1000, // Update interval in ms
+            n = 20;          // Number of data points
+
+        let now = Date.now();
+        let initialData = {
+            "load": d3.range(n).map((i) => {
+                return {
+                    time: now - (n - i) * duration,
+                    // [1m, 5m, 15m]
+                    values: [NaN, NaN, NaN]
+                }
+            })
+        };
+        console.log(now, initialData);
 
         const load = ["1m", "5m", "15m"];
 
         // Scales
-        // 1, 18
-        // now - (n-1) * duration, now - 2 * duration
         const x = d3.scaleLinear()
             .domain([1, n - 2])
             .range([0, width]);
 
-        let now = Date.now();
         let timeX = d3.scaleTime()
             .domain([new Date(now - (n - 1) * duration), new Date(now - 2 * duration)])
             .range([0, width]); // Initial range (will update dynamically)
