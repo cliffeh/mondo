@@ -4,7 +4,7 @@ import random
 from flask import Blueprint
 from mondo.util import payload
 
-bp = Blueprint("sensors", __name__, url_prefix="/sensors")
+bp = Blueprint("metrics", __name__, url_prefix="/metrics")
 
 
 @bp.route("/rand", methods=("GET",))

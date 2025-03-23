@@ -1,6 +1,6 @@
 from flask import Flask
 
-from .sensors import bp as sensors_bp
+from .metrics import bp as metrics_bp
 
 
 def create_app(test_config=None):
@@ -17,6 +17,6 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-    app.register_blueprint(sensors_bp)
+    app.register_blueprint(metrics_bp)
 
     return app

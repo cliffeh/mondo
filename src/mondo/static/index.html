@@ -44,7 +44,7 @@
                 }
             })
         };
-        console.log(now, initialData);
+        // console.log(now, initialData);
 
         const load = ["1m", "5m", "15m"];
 
@@ -111,7 +111,7 @@
 
         function tick(data, i, g) {
             // console.log(d3.selectAll(g));
-            d3.json("/sensors/load").then(function (result) {
+            d3.json("/metrics/load").then(function (result) {
                 const maxima = Object.entries(result.values).map(([k, v]) => {
                     let load = d3.select(`.line._${k}`);
                     let data = load.datum();
