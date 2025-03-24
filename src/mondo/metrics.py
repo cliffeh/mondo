@@ -1,18 +1,34 @@
 import os
 import random
-
-from flask import Blueprint
+from functools import wraps
+from flask import Blueprint, request
 
 bp = Blueprint("metrics", __name__, url_prefix="/metrics")
 
 
+def filter(func):
+    """custom decorator for filtering only keys the user wants"""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        if filters := request.args.get("filter"):
+            return {key: result[key] for key in filters.split(",") if key in result}
+        else:
+            return result
+
+    return wrapper
+
+
 @bp.route("/rand", methods=("GET",))
+@filter
 def get_rand():
     """Get random number (for testing)"""
     return {"rand": float(random.randint(20000, 90000)) / 1000.0}
 
 
 @bp.route("/temp", methods=("GET",))
+@filter
 def get_temp():
     """Get system temperature sensor values"""
     i = 0
@@ -34,6 +50,7 @@ def get_temp():
 
 
 @bp.route("/load", methods=("GET",))
+@filter
 def get_load():
     """Get system load average"""
     la = os.getloadavg()
