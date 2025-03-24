@@ -21,7 +21,6 @@ def filter(func):
 
 
 @bp.route("/rand", methods=("GET",))
-@filter
 def get_rand():
     """Get random number (for testing)"""
     return {"rand": float(random.randint(20000, 90000)) / 1000.0}
