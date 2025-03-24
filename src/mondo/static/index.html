@@ -40,16 +40,12 @@
         const loadLabel = (i) => ["1m", "5m", "15m"][i];
 
         // Scales
-        // const x = d3.scaleLinear()
-        //     .domain([1, n - 2])
-        //     .range([0, width]);
-
         let x = d3.scaleTime()
-            .domain([t[1], t[n - 2]])
-            .range([0, width]); // Initial range (will update dynamically)
+            .domain([t[1], t[n - 2]]) // Initial domain (will update dynamically)
+            .range([0, width]);
 
         let y = d3.scaleLinear()
-            .domain([0, 0]) // Initial range (will update dynamically)
+            .domain([0, 0]) // Initial domain (will update dynamically)
             .range([height, 0]);
 
         // Line generator
@@ -84,7 +80,7 @@
             .attr("class", "y-axis")
             .call(d3.axisLeft(y));
 
-        // Container for the line (will move to create the scrolling effect)
+        // Container for the lines
         const lineContainer = svg.append("g")
             .attr("clip-path", "url(#clip)")
             .append("g")
@@ -101,12 +97,7 @@
             .on("start", tick);
 
         function tick(_data, i, g) {
-            // console.log(data);
-            // console.log(i);
-            // console.log(g);
             let container = d3.select(g[i]);
-            container.attr("transform", null);
-
             let paths = container.selectAll(".line");
             let data = paths.data();
 
@@ -126,7 +117,7 @@
                     .transition()
                     .duration(duration)
                     .ease(d3.easeLinear)
-                    .attr("transform", (d) => "translate(" + x(t[0]) + ",0)")
+                    .attr("transform", `translate(${x(t[0])})`)
                     .on("end", (d) => {
                         // pop the old data point off the front
                         d.shift();
@@ -134,7 +125,8 @@
 
                 // pop the old timestamp off the front
                 t.shift();
-                // update X and Y ranges
+
+                // update X and Y domains
                 x.domain([t[1], t[n - 2]]);
                 y.domain([0, d3.max(data.flat().map(d => d)) * 1.1]);
 
@@ -159,7 +151,6 @@
                     .ease(d3.easeLinear)
                     .on("end", tick);
             });
-
         }
     </script>
 </body>
