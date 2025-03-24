@@ -65,8 +65,8 @@
         const line = d3.line()
             .curve(d3.curveBasis)
             .x(function (d, i) { return x(i); })
-            .y(function (d, i) { return y(d); })
-            .defined(d => !isNaN(d)); // Omit NaN values
+            .y(function (d, i) { return y(d.value); })
+            .defined(d => !isNaN(d.value)); // Omit NaN values
 
         // Create SVG
         const svg = d3.select("body").append("svg")
@@ -100,7 +100,9 @@
             .attr("class", "load");
 
         lineContainer.selectAll(".line")
-            .data(d3.range(3).map(() => d3.range(n + 1).map(() => NaN)))
+            .data(d3.range(3).map(() => d3.range(n + 1).map(() => {
+                return { value: NaN };
+            })))
             .enter()
             .append("path")
             .attr("class", (d, i) => `line _${loadLabel(i)}`)
@@ -135,8 +137,10 @@
                     // pop the old data point off the front
                     d.shift();
                     // ...and push a new data point onto the back
-                    d.push(result[`${loadLabel(i)}`])
+                    d.push({ value: result[`${loadLabel(i)}`] })
                 });
+
+                console.log(data);
 
                 // draw the new point
                 paths
@@ -151,7 +155,7 @@
 
                 // update X and Y ranges
                 timeX.domain([new Date(now - (n - 1) * duration), new Date(now - 2 * duration)]);
-                y.domain([0, d3.max(data.flat()) * 1.1]);
+                y.domain([0, d3.max(data.flat().map(d => d.value)) * 1.1]);
 
                 // adjust the x axis
                 xAxis
@@ -168,7 +172,7 @@
                     .call(d3.axisLeft(y));
 
                 // schedule next tick
-                d3.select(g[i])
+                container
                     .transition()
                     .duration(duration)
                     .on("end", tick);
