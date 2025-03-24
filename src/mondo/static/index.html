@@ -100,8 +100,8 @@
             .attr("class", "load");
 
         lineContainer.selectAll(".line")
-            .data(d3.range(3).map(() => d3.range(n + 1).map(() => {
-                return { value: NaN };
+            .data(d3.range(3).map(() => d3.range(n + 1).map((i) => {
+                return { time: now - (n - i + 1) * duration, value: NaN };
             })))
             .enter()
             .append("path")
@@ -137,10 +137,10 @@
                     // pop the old data point off the front
                     d.shift();
                     // ...and push a new data point onto the back
-                    d.push({ value: result[`${loadLabel(i)}`] })
+                    d.push({ time: now, value: result[`${loadLabel(i)}`] })
                 });
 
-                console.log(data);
+                console.log(now, new Date(now), data);
 
                 // draw the new point
                 paths
@@ -154,7 +154,9 @@
                 // .on("end", (d) => d.shift()); // pop the old data point off the front
 
                 // update X and Y ranges
-                timeX.domain([new Date(now - (n - 1) * duration), new Date(now - 2 * duration)]);
+                // timeX.domain([new Date(now - (n - 1) * duration), new Date(now - 2 * duration)]);
+                // TODO is this off-by-one?
+                timeX.domain([data[0][1].time, data[0][n - 2].time]);
                 y.domain([0, d3.max(data.flat().map(d => d.value)) * 1.1]);
 
                 // adjust the x axis
