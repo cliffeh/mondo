@@ -46,7 +46,7 @@
         };
         // console.log(now, initialData);
 
-        const load = ["1m", "5m", "15m"];
+        const loadLabel = (i) => ["1m", "5m", "15m"][i];
 
         // Scales
         const x = d3.scaleLinear()
@@ -100,10 +100,10 @@
             .attr("class", "load");
 
         lineContainer.selectAll(".line")
-            .data(load.map(() => d3.range(n + 1).map(() => NaN)))
+            .data(d3.range(3).map(() => d3.range(n + 1).map(() => NaN)))
             .enter()
             .append("path")
-            .attr("class", (d, i) => `line _${load[i]}`)
+            .attr("class", (d, i) => `line _${loadLabel(i)}`)
             .attr("d", line);
         // .call(updatePaths);
 
@@ -135,7 +135,7 @@
                     // pop the old data point off the front
                     d.shift();
                     // ...and push a new data point onto the back
-                    d.push(result[`${load[i]}`])
+                    d.push(result[`${loadLabel(i)}`])
                 });
 
                 // draw the new point
@@ -151,7 +151,7 @@
 
                 // update X and Y ranges
                 timeX.domain([new Date(now - (n - 1) * duration), new Date(now - 2 * duration)]);
-                y.domain([0, d3.max(d3.max(data)) * 1.1]);
+                y.domain([0, d3.max(data.flat()) * 1.1]);
 
                 // adjust the x axis
                 xAxis
