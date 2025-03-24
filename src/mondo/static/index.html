@@ -100,42 +100,58 @@
             .attr("class", "load");
 
         lineContainer.selectAll(".line")
-            .data(load.map(() => d3.range(n).map(() => NaN)))
+            .data(load.map(() => d3.range(n + 1).map(() => NaN)))
             .enter()
             .append("path")
             .attr("class", (d, i) => `line _${load[i]}`)
             .attr("d", line);
+        // .call(updatePaths);
+
+        // lineContainer.call(updatePaths);
 
         lineContainer.transition()
             .on("start", tick);
 
-        function tick(data, i, g) {
-            // console.log(d3.selectAll(g));
+        // function updatePaths(a, b, c) {
+        //     console.log(a);
+        //     console.log(b);
+        //     console.log(c);
+        // }
+
+        function tick(_data, i, g) {
+            // console.log(data);
+            // console.log(i);
+            // console.log(g);
+            let container = d3.select(g[i]);
+            container.attr("transform", null);
+
+            let paths = container.selectAll(".line");
+            let data = paths.data();
+
             d3.json("/metrics/load").then(function (result) {
-                const maxima = Object.entries(result).map(([k, v]) => {
-                    let load = d3.select(`.line._${k}`);
-                    let data = load.datum();
+                now = Date.now();
 
-                    // push the new value onto the back
-                    data.push(v);
-
-                    // draw the new point
-                    load
-                        .attr("d", line)
-                        .attr("transform", null)
-                        .transition() // ...and slide it to the left
-                        .duration(duration)
-                        .ease(d3.easeLinear)
-                        .attr("transform", "translate(" + x(0) + ",0)")
-                        .on("end", (d) => d.shift()); // pop the old data point off the front
-
-                    return d3.max(data, d => d);
+                data.map((d, i) => {
+                    // pop the old data point off the front
+                    d.shift();
+                    // ...and push a new data point onto the back
+                    d.push(result[`${load[i]}`])
                 });
 
-                y.domain([0, d3.max(maxima, d => d) * 1.1]); // Adjust Y range
-                now = Date.now();
-                // console.log(new Date(now), maxima);
+                // draw the new point
+                paths
+                    .attr("d", line)
+                    .attr("transform", null)
+                    .transition() // ...and slide to the left
+                    .duration(duration)
+                    .ease(d3.easeLinear)
+                    .attr("transform", "translate(" + x(0) + ",0)");
+
+                // .on("end", (d) => d.shift()); // pop the old data point off the front
+
+                // update X and Y ranges
                 timeX.domain([new Date(now - (n - 1) * duration), new Date(now - 2 * duration)]);
+                y.domain([0, d3.max(d3.max(data)) * 1.1]);
 
                 // adjust the x axis
                 xAxis
@@ -157,6 +173,7 @@
                     .duration(duration)
                     .on("end", tick);
             });
+
         }
     </script>
 </body>
