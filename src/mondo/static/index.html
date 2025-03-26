@@ -32,9 +32,8 @@
             width = 1200 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
             duration = 1000, // Update interval in ms
-            n = 20;          // Number of data points
-
-        let now = Date.now();
+            n = 10,          // Number of data points
+            now = Date.now();
 
         // we want our "window" to hold points 1..n; point 0 will be drawn
         // outside of the window to the left and point n+1 will be drawn outside
@@ -96,7 +95,7 @@
 
         const paths = lineContainer
             .selectAll("path")
-            .data(d3.range(3).map(() => d3.range(n + 1).map(() => NaN)))
+            .data(meta.labels.map(() => []))
             .join("path")
             .attr("class", "line")
             .attr("id", (d, i) => `_${meta.labels[i]}`)
@@ -107,13 +106,25 @@
         function updatePaths(g) {
             const meta = g.datum();
             d3.json(`${meta.uri}`).then(function (result) {
-                now = Date.now();
+                const now = Date.now();
+                const paths = g.selectAll(".line");
+                const data = paths.data();
+
+                data.map((d, i) => {
+                    const value = result[meta.labels[i]];
+                    d.push({
+                        time: now, value: value
+                    })
+                    y.domain([0, Math.max(y.domain()[1], value * 1.1)]);
+                });
+
+                // adjust the y axis
+                yAxis.transition()
+                    .duration(duration)
+                    .ease(d3.easeLinear)
+                    .call(d3.axisLeft(y));
 
                 g.selectAll(".line")
-                    .datum((d, i) => {
-                        d.push({ time: now, value: result[meta.labels[i]] });
-                        return d;
-                    })
                     .attr("d", line);
 
                 g.call(slideLeft);
@@ -121,12 +132,14 @@
         }
 
         function slideLeft(g) {
-            let data = g.selectAll(".line").data();
+            const data = g.selectAll(".line").data();
+
+            const now = Date.now();
             g.attr("transform", null);
 
             // update X and Y domains
             x.domain([now - n * duration, now - duration])
-            y.domain([0, d3.max(data.flat().map(d => d.value)) * 1.1]);
+            // y.domain([0, d3.max(data.flat().map(d => d.value)) * 1.1]);
 
             // adjust the x axis
             xAxis.transition()
@@ -134,19 +147,17 @@
                 .ease(d3.easeLinear)
                 .call(d3.axisBottom(x));
 
-            // adjust the y axis
-            yAxis.transition()
-                .duration(duration)
-                .ease(d3.easeLinear)
-                .call(d3.axisLeft(y));
-
             g.transition()
                 .duration(duration)
                 .ease(d3.easeLinear)
                 .attr("transform", `translate(${x(now - (n + 1) * duration)})`)
                 .on("end", () => {
                     // pop all the old data points off the front
-                    data.map((d) => d.shift());
+                    data.map((d) => {
+                        while (d.length > 0 && d[0].time < (now - (n + 1) * duration)) {
+                            d.shift();
+                        }
+                    });
                     updatePaths(g);
                 });
         }

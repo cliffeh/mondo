@@ -18,10 +18,7 @@ as time ticks by, we'll maintain two control points drawn outside the frame
 
 In this example, time `t=9` (i.e., `now()`, drawn off to the right and then
 transitioned into the frame), the window diplays time `[t-n..t-1]`, with time
-`t-(n+1)` transitioned out of the frame to the left. At any given time a data
-set will either contain `n+1` points (we've popped the 0th point off the front
-and we're just about to fetch new data), or `n+2` points (we've fetched new data
-and are transitioning to the left).
+`t-(n+1)` transitioned out of the frame to the left.
 
 ## References
 
