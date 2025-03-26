@@ -32,16 +32,15 @@
             width = 1200 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
             duration = 1000, // Update interval in ms
-            n = 60;          // Number of data points
+            n = 10;          // Number of data points
 
         let now = Date.now();
-        let t = d3.range(n).map((i) => now - (n - i) * duration);
 
         const loadLabel = (i) => ["1m", "5m", "15m"][i];
 
         // Scales
         let x = d3.scaleTime()
-            .domain([t[1], t[n - 2]]) // Initial domain (will update dynamically)
+            .domain([now - (n - 1) * duration, now - 2 * duration]) // Initial domain (will update dynamically)
             .range([0, width]);
 
         let y = d3.scaleLinear()
@@ -51,9 +50,9 @@
         // Line generator
         const line = d3.line()
             .curve(d3.curveBasis)
-            .x((d, i) => x(t[i]))
-            .y((d, i) => y(d))
-            .defined(d => !isNaN(d)); // Omit NaN values
+            .x((d) => x(d.time))
+            .y((d) => y(d.value))
+            .defined(d => !isNaN(d.value)); // Omit NaN values
 
         // Create SVG
         const svg = d3.select("body").append("svg")
@@ -102,11 +101,10 @@
         function updatePaths(g) {
             d3.json(`${g.datum().uri}`).then(function (result) {
                 now = Date.now();
-                t.push(now);
 
                 g.selectAll(".line")
                     .datum((d, i) => {
-                        d.push(result[`${loadLabel(i)}`]);
+                        d.push({ time: now, value: result[`${loadLabel(i)}`] });
                         return d;
                     })
                     .attr("d", line);
@@ -120,8 +118,8 @@
             g.attr("transform", null);
 
             // update X and Y domains
-            x.domain([t[1], t[n - 2]]);
-            y.domain([0, d3.max(data.flat().map(d => d)) * 1.1]);
+            x.domain([now - (n - 1) * duration, now - 2 * duration])
+            y.domain([0, d3.max(data.flat().map(d => d.value)) * 1.1]);
 
             // adjust the x axis
             xAxis.transition()
@@ -138,10 +136,9 @@
             g.transition()
                 .duration(duration)
                 .ease(d3.easeLinear)
-                .attr("transform", `translate(${x(t[0])})`)
+                .attr("transform", `translate(${x(now - n * duration)})`)
                 .on("end", () => {
                     // pop all the old data points off the front
-                    t.shift();
                     data.map((d) => d.shift());
                     updatePaths(g);
                 });
