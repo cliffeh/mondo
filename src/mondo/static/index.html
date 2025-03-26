@@ -6,21 +6,21 @@
     <title>mondo</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        g.load .line {
+        g#load .line {
             fill: none;
             stroke-width: 2px;
             stroke: steelblue;
         }
 
-        g.load .line._1m {
+        g#load .line#_1m {
             opacity: 1.0;
         }
 
-        g.load .line._5m {
+        g#load .line#_5m {
             opacity: 0.4;
         }
 
-        g.load .line._15m {
+        g#load .line#_15m {
             opacity: 0.133;
         }
     </style>
@@ -35,10 +35,6 @@
             n = 20;          // Number of data points
 
         let now = Date.now();
-
-        const loadLabel = (i) => ["1m", "5m", "15m"][i];
-
-        // Scales
 
         // we want our "window" to hold points 1..n; point 0 will be drawn
         // outside of the window to the left and point n+1 will be drawn outside
@@ -84,32 +80,38 @@
             .attr("class", "y-axis")
             .call(d3.axisLeft(y));
 
+        const meta = {
+            id: "load",
+            uri: "/metrics/load",
+            labels: ["1m", "5m", "15m"]
+        };
+
         // Container for the lines
         const lineContainer = svg.append("g")
             .attr("clip-path", "url(#clip)")
             .append("g")
-            .attr("class", "metric load")
-            .datum({
-                uri: "/metrics/load"
-            });
+            .attr("class", "metric")
+            .attr("id", `${meta.id}`)
+            .datum(meta);
 
         const paths = lineContainer
             .selectAll("path")
             .data(d3.range(3).map(() => d3.range(n + 1).map(() => NaN)))
             .join("path")
-            .attr("class", ".line")
-            .attr("class", (d, i) => `line _${loadLabel(i)}`)
+            .attr("class", "line")
+            .attr("id", (d, i) => `_${meta.labels[i]}`)
             .attr("d", line);
 
         lineContainer.call(updatePaths);
 
         function updatePaths(g) {
-            d3.json(`${g.datum().uri}`).then(function (result) {
+            const meta = g.datum();
+            d3.json(`${meta.uri}`).then(function (result) {
                 now = Date.now();
 
                 g.selectAll(".line")
                     .datum((d, i) => {
-                        d.push({ time: now, value: result[`${loadLabel(i)}`] });
+                        d.push({ time: now, value: result[meta.labels[i]] });
                         return d;
                     })
                     .attr("d", line);
@@ -137,8 +139,6 @@
                 .duration(duration)
                 .ease(d3.easeLinear)
                 .call(d3.axisLeft(y));
-
-
 
             g.transition()
                 .duration(duration)
