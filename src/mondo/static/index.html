@@ -32,7 +32,7 @@
             width = 1200 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
             duration = 1000, // Update interval in ms
-            n = 10;          // Number of data points
+            n = 20;          // Number of data points
 
         let now = Date.now();
 
@@ -40,7 +40,7 @@
 
         // Scales
         let x = d3.scaleTime()
-            .domain([now - (n - 1) * duration, now - 2 * duration]) // Initial domain (will update dynamically)
+            .domain([now - n * duration, now - duration]) // Initial domain (will update dynamically)
             .range([0, width]);
 
         let y = d3.scaleLinear()
@@ -90,7 +90,7 @@
 
         const paths = lineContainer
             .selectAll("path")
-            .data(d3.range(3).map(() => d3.range(n).map(() => NaN)))
+            .data(d3.range(3).map(() => d3.range(n + 1).map(() => NaN)))
             .join("path")
             .attr("class", ".line")
             .attr("class", (d, i) => `line _${loadLabel(i)}`)
@@ -118,7 +118,7 @@
             g.attr("transform", null);
 
             // update X and Y domains
-            x.domain([now - (n - 1) * duration, now - 2 * duration])
+            x.domain([now - n * duration, now - duration])
             y.domain([0, d3.max(data.flat().map(d => d.value)) * 1.1]);
 
             // adjust the x axis
@@ -133,10 +133,12 @@
                 .ease(d3.easeLinear)
                 .call(d3.axisLeft(y));
 
+
+
             g.transition()
                 .duration(duration)
                 .ease(d3.easeLinear)
-                .attr("transform", `translate(${x(now - n * duration)})`)
+                .attr("transform", `translate(${x(now - (n + 1) * duration)})`)
                 .on("end", () => {
                     // pop all the old data points off the front
                     data.map((d) => d.shift());
