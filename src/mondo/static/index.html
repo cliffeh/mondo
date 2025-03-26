@@ -92,7 +92,7 @@
             .append("g")
             .attr("class", "metric")
             .attr("id", `${meta.id}`)
-            .datum(meta);
+            .datum(meta); // NB we need _somewhere_ to stash our metadata...
 
         const paths = lineContainer
             .selectAll("path")
