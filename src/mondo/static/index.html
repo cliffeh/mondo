@@ -33,12 +33,17 @@
 <body>
     <script>
         const baseUri = "/metrics";
+        // NB enables both filtering and ordering of specific keys per-metric
+        const filters = {
+            load: ["1m", "5m", "15m"]
+        }
         d3.json(`${baseUri}`).then((metrics) => Object.entries(metrics).map(render));
 
         function render([name, values]) {
             // Object.entries(metrics).map(([name, values]) => {
             const uri = `${baseUri}/${name}`;
-            const labels = Object.keys(values);
+            const labels = filters[name] || Object.keys(values);
+            if (labels.length == 0) return; // we don't have anything to show!
 
             const margin = { top: 20, right: 40, bottom: 20, left: 40 },
                 width = 1200 - margin.left - margin.right,
