@@ -5,7 +5,7 @@ from .metrics import bp as metrics_bp
 
 def create_app(test_config=None):
     # create and configure the app
-    app = Quart(__name__)
+    app = Quart(__name__, static_url_path="/")
     app.config.from_mapping(
         SECRET_KEY="dev",
     )
