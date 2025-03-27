@@ -39,11 +39,19 @@
 
 <body>
     <script>
-        const baseUri = "/metrics";
-        // NB enables both filtering and ordering of specific keys per-metric
-        const filters = {
-            load: ["1m", "5m", "15m"]
-        }
+        // Globals
+        const margin = { top: 20, right: 40, bottom: 20, left: 40 },
+            width = 1200 - margin.left - margin.right,
+            height = 300 - margin.top - margin.bottom,
+            duration = 1000, // Update interval in ms
+            n = 20,          // Number of data points
+            baseUri = "/metrics",
+
+            // NB enables both filtering and ordering of specific keys per-metric
+            filters = {
+                load: ["1m", "5m", "15m"]
+            };
+
         d3.json(`${baseUri}`).then((metrics) => Object.entries(metrics).map(render));
 
         function render([name, values]) {
@@ -53,7 +61,7 @@
 
             // NB for our _initial_ scale we're going to "pretend" that it's one
             // second in the past to avoid a 1-second "stutter" of the x-axis
-            const then = Date.now();
+            const then = Date.now() - 1 * duration;
             const data = labels.map((label) => {
                 return [{ time: then, value: values[label] }];
             });
@@ -70,12 +78,6 @@
             ws.onmessage = onmessage;
 
             // TODO handle reconnect on close
-
-            const margin = { top: 20, right: 40, bottom: 20, left: 40 },
-                width = 1200 - margin.left - margin.right,
-                height = 300 - margin.top - margin.bottom,
-                duration = 1000, // Update interval in ms
-                n = 20;          // Number of data points
 
             // We want our "window" to hold points 1..n; point 0 will be drawn
             // outside of the window to the left and point n+1 will be drawn outside
