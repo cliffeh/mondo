@@ -4,19 +4,19 @@ from quart import Blueprint
 bp = Blueprint("metrics", __name__, url_prefix="/metrics")
 
 
-@bp.route("/", strict_slashes=False)
+@bp.route("")
 def get_metrics() -> dict[str, dict[str, float]]:
     return {"load": get_load(), "temp": get_temp()}
 
 
-@bp.route("/load", strict_slashes=False)
+@bp.route("/load")
 def get_load() -> dict[str, float]:
     """Get system load average"""
     la = os.getloadavg()
     return {"1m": la[0], "5m": la[1], "15m": la[2]}
 
 
-@bp.route("/temp", strict_slashes=False)
+@bp.route("/temp")
 def get_temp() -> dict[str, float]:
     """Get system temperature sensor values"""
     i = 0
