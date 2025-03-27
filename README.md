@@ -1,10 +1,19 @@
 # mondo
 
-> it's got what plants crave
+> _It's got what plants crave_
 
-Mondo is a little monitoring/graphing utility.
+Mondo is a lightweight monitoring/graphing utility. It's meant for displaying
+"live" system stats in a browser.
 
-## Notes on representation
+## Quickstart
+
+Do `make serve`, and then take a peek at <http://localhost:2505/static/index.html>.
+
+## Development
+
+Take a look at `make help` for the various build targets...and then Dig In!
+
+## Notes
 
 Suppose we have `n=8`. That means we want to show `n` units (default: seconds)
 worth of data in the window. In order to smoothly transition from left-to-right

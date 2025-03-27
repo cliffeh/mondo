@@ -1,7 +1,12 @@
 # TODO
 
-* enable graphing multiple metrics, from multiple machines
-* chart legends
-* encapsulate the logic in a "sensor" object to make it simpler to add new ones
+* make it simpler to add new metrics, with both http and websocket routes
 * hover details
 * websocket disconnect/reconnect/error handling
+* a better README
+* make it "production-ready" (UWSGI, gunicorn, etc.)
+* tests (of any kind lol)
+* server-side caching of the last N data points
+* better chart legends
+* signal handling (`Ctrl-C` breakage)
+* do some debug/trace logging in places
