@@ -28,22 +28,26 @@
 
 <body>
     <script>
+        let now = Date.now();
+
         const margin = { top: 20, right: 40, bottom: 20, left: 40 },
             width = 1200 - margin.left - margin.right,
             height = 300 - margin.top - margin.bottom,
             duration = 1000, // Update interval in ms
-            n = 10,          // Number of data points
-            now = Date.now();
+            n = 20;          // Number of data points
 
-        // we want our "window" to hold points 1..n; point 0 will be drawn
+        // We want our "window" to hold points 1..n; point 0 will be drawn
         // outside of the window to the left and point n+1 will be drawn outside
         // of the window to the right; flipping that (because, time), we want
         // to clamp the display domain to t-n..t-1
-        let x = d3.scaleTime()
-            .domain([now - n * duration, now - 1 * duration])
+        //
+        // NB for our _initial_ scale we're going to "pretend" that it's one
+        // second in the past to avoid a 1-second "stutter" of the x-axis
+        const x = d3.scaleTime()
+            .domain([now - (n + 1) * duration, now - 2 * duration])
             .range([0, width]);
 
-        let y = d3.scaleLinear()
+        const y = d3.scaleLinear()
             .domain([0, 0]) // Initial domain (will update dynamically)
             .range([height, 0]);
 
@@ -79,44 +83,47 @@
             .attr("class", "y-axis")
             .call(d3.axisLeft(y));
 
-        const meta = {
-            id: "load",
-            uri: "/metrics/load",
-            labels: ["1m", "5m", "15m"]
-        };
+        // Metadata about this particular metric
+        // TODO these should be fetched dynamically at startup
+        const name = "load";
+        const uri = "/metrics/load";
+        const labels = ["1m", "5m", "15m"];
 
         // Container for the lines
-        const lineContainer = svg.append("g")
+        const g = svg.append("g")
             .attr("clip-path", "url(#clip)")
             .append("g")
             .attr("class", "metric")
-            .attr("id", `${meta.id}`)
-            .datum(meta); // NB we need _somewhere_ to stash our metadata...
+            .attr("id", `${name}`);
 
-        const paths = lineContainer
-            .selectAll("path")
-            .data(meta.labels.map(() => []))
+        g.selectAll("path")
+            .data(labels.map(() => []))
             .join("path")
             .attr("class", "line")
-            .attr("id", (d, i) => `_${meta.labels[i]}`)
-            .attr("d", line);
+            .attr("id", (d, i) => `_${labels[i]}`)
+            .attr("d", line)
+            .call(tick, g);
 
-        lineContainer.call(updatePaths);
+        function tick(paths, g) {
+            d3.json(`${uri}`).then(function (result) {
+                now = Date.now();
 
-        function updatePaths(g) {
-            const meta = g.datum();
-            d3.json(`${meta.uri}`).then(function (result) {
-                const now = Date.now();
-                const paths = g.selectAll(".line");
                 const data = paths.data();
-
                 data.map((d, i) => {
-                    const value = result[meta.labels[i]];
+                    const value = result[labels[i]];
                     d.push({
                         time: now, value: value
                     })
+                    // adjust the y domain while we're at it
                     y.domain([0, Math.max(y.domain()[1], value * 1.1)]);
                 });
+
+                // draw the new point
+                g.selectAll(".line")
+                    .attr("d", line);
+
+                // reset our transform before adjusting the x domain
+                g.attr("transform", null);
 
                 // adjust the y axis
                 yAxis.transition()
@@ -124,42 +131,30 @@
                     .ease(d3.easeLinear)
                     .call(d3.axisLeft(y));
 
-                g.selectAll(".line")
-                    .attr("d", line);
+                // adjust the x domain and x axis
+                x.domain([now - n * duration, now - duration]);
+                xAxis.transition()
+                    .duration(duration)
+                    .ease(d3.easeLinear)
+                    .call(d3.axisBottom(x));
 
-                g.call(slideLeft);
-            });
-        }
+                // ... and slide the whole thing to the left
+                g.transition()
+                    .duration(duration)
+                    .ease(d3.easeLinear)
+                    .attr("transform", `translate(${x(now - (n + 1) * duration)})`)
+                    .on("end", () => {
+                        // pop all the old data points off the front
+                        data.map((d) => {
+                            while (d.length > 0 && d[0].time < (now - (n + 1) * duration)) {
+                                d.shift();
+                            }
+                        });
 
-        function slideLeft(g) {
-            const data = g.selectAll(".line").data();
-
-            const now = Date.now();
-            g.attr("transform", null);
-
-            // update X and Y domains
-            x.domain([now - n * duration, now - duration])
-            // y.domain([0, d3.max(data.flat().map(d => d.value)) * 1.1]);
-
-            // adjust the x axis
-            xAxis.transition()
-                .duration(duration)
-                .ease(d3.easeLinear)
-                .call(d3.axisBottom(x));
-
-            g.transition()
-                .duration(duration)
-                .ease(d3.easeLinear)
-                .attr("transform", `translate(${x(now - (n + 1) * duration)})`)
-                .on("end", () => {
-                    // pop all the old data points off the front
-                    data.map((d) => {
-                        while (d.length > 0 && d[0].time < (now - (n + 1) * duration)) {
-                            d.shift();
-                        }
+                        // schedule the next tick
+                        tick(paths, g);
                     });
-                    updatePaths(g);
-                });
+            });
         }
     </script>
 </body>
