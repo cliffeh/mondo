@@ -17,6 +17,7 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
+    @app.route("/index.html")
     @app.route("/", strict_slashes=False)
     async def index():
         return await render_template("index.html")

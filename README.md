@@ -7,7 +7,7 @@ Mondo is a lightweight monitoring/graphing utility. It's meant for displaying
 
 ## Quickstart
 
-Do `make serve`, and then take a peek at <http://localhost:2505/index.html>.
+Do `make serve`, and then take a peek at <http://localhost:2505>.
 
 ## Development
 
