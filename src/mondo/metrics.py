@@ -50,7 +50,7 @@ def get_temp() -> dict[str, float]:
             return temps
 
 
-@bp.websocket("/load")
+@bp.websocket("/temp")
 async def get_temp_ws():
     try:
         while True:
