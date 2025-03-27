@@ -1,4 +1,4 @@
-from quart import Quart
+from quart import Quart, render_template
 
 from .metrics import bp as metrics_bp
 
@@ -16,6 +16,10 @@ def create_app(test_config=None):
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
+
+    @app.route("/", strict_slashes=False)
+    async def index():
+        return await render_template("index.html")
 
     app.register_blueprint(metrics_bp)
 

@@ -9,6 +9,10 @@ MYPY=venv/bin/mypy
 
 default: help
 
+code: venv $(QUART)  ## open vscode
+	@code .
+.PHONY: code
+
 venv:  ## create a virtual environment
 	@python3 -mvenv --upgrade-deps --prompt mondo venv
 
