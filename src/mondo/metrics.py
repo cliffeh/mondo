@@ -1,7 +1,7 @@
 import os
 import random
 from functools import wraps
-from flask import Blueprint, request
+from quart import Blueprint, request
 
 bp = Blueprint("metrics", __name__, url_prefix="/metrics")
 
