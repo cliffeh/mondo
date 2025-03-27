@@ -6,25 +6,32 @@
     <title>mondo</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        text.label {
-            font-size: small;
+        .legend tspan {
+            padding-left: 10px;
+        }
+
+        g.metric .line,
+        .key {
+            stroke: steelblue;
         }
 
         g.metric .line {
             fill: none;
             stroke-width: 2px;
-            stroke: steelblue;
         }
 
-        g#load .line#_1m {
+        g#load .line#_1m,
+        .key._1m {
             opacity: 1.0;
         }
 
-        g#load .line#_5m {
+        g#load .line#_5m,
+        .key._5m {
             opacity: 0.4;
         }
 
-        g#load .line#_15m {
+        g#load .line#_15m,
+        .key._15m {
             opacity: 0.133;
         }
     </style>
@@ -81,10 +88,29 @@
                 .append("g")
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
-            svg.append("text")
-                .attr("class", "label")
+            const legend = svg.append("g")
                 .attr("transform", "translate(10)")
+                .append("text")
+                .attr("class", "legend");
+
+            legend.append("tspan")
+                .attr("class", "label")
                 .text(`${name}`);
+
+            legend.selectAll(".key")
+                .data(labels)
+                .join("tspan")
+                .attr("class", (d) => `key _${d}`)
+                .attr("dx", 10)
+                .text((d) => d)
+                .on("mouseover", (e, d) => {
+                    d3.selectAll(`#_${d},._${d}`)
+                        .attr("style", "stroke: red; opacity: 1.0");
+                })
+                .on("mouseout", (e, d) => {
+                    d3.selectAll(`#_${d},._${d}`)
+                        .attr("style", null);
+                });
 
             // Clipping mask for scrolling effect
             const clip = svg.append("defs").append("clipPath")
