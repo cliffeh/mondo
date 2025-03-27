@@ -114,24 +114,23 @@
                     d.push({
                         time: now, value: value
                     })
-                    // adjust the y domain while we're at it
-                    y.domain([0, Math.max(y.domain()[1], value * 1.1)]);
                 });
 
                 // draw the new point
                 g.selectAll(".line")
                     .attr("d", line);
 
-                // reset our transform before adjusting the x domain
+                // reset our transform before adjusting domains
                 g.attr("transform", null);
 
                 // adjust the y axis
+                y.domain([0, d3.max(data.flat(), d => d.value) * 1.1]);
                 yAxis.transition()
                     .duration(duration)
                     .ease(d3.easeLinear)
                     .call(d3.axisLeft(y));
 
-                // adjust the x domain and x axis
+                // adjust the x axis
                 x.domain([now - n * duration, now - duration]);
                 xAxis.transition()
                     .duration(duration)
