@@ -1,6 +1,6 @@
 PIP=venv/bin/pip
 PYTHON=venv/bin/python3
-FLASK=venv/bin/flask
+QUART=venv/bin/quart
 
 # linters
 BLACK=venv/bin/black
@@ -9,10 +9,11 @@ MYPY=venv/bin/mypy
 
 default: help
 
-venv $(FLASK):  ## create a virtual environment and install dependencies
+venv:  ## create a virtual environment
 	@python3 -mvenv --upgrade-deps --prompt mondo venv
+
+$(QUART): venv
 	@$(PIP) install -e .[dev]
-.PHONY: venv
 
 lint:  ## run all linters (black, isort, mypy)
 	@$(BLACK) src
@@ -20,8 +21,8 @@ lint:  ## run all linters (black, isort, mypy)
 	@$(MYPY) src
 .PHONY: lint
 
-serve: $(FLASK)  ## run a hot-reloading development server
-	@$(FLASK) --app mondo run --host :: --port 2505 --reload --debug
+serve: $(QUART)  ## run a hot-reloading development server
+	@$(QUART)  --debug --app mondo run --host localhost --port 2505 --reload
 .PHONY: serve
 
 clean:  ## clean up build directories and cache files

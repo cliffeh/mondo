@@ -1,11 +1,11 @@
-from flask import Flask
+from quart import Quart
 
 from .metrics import bp as metrics_bp
 
 
 def create_app(test_config=None):
     # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
+    app = Quart(__name__)
     app.config.from_mapping(
         SECRET_KEY="dev",
     )
