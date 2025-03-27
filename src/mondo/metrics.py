@@ -44,7 +44,9 @@ def get_temp() -> dict[str, float]:
             with open(f"/sys/class/thermal/thermal_zone{i}/type") as typefile, open(
                 f"/sys/class/thermal/thermal_zone{i}/temp"
             ) as tempfile:
-                temps[typefile.read().strip()] = float(tempfile.read().strip()) / 1000.0
+                temps[typefile.read().strip().replace(" ", "-")] = (
+                    float(tempfile.read().strip()) / 1000.0
+                )
             i += 1
         except FileNotFoundError:
             return temps
