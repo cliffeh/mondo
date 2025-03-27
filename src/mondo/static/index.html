@@ -6,7 +6,11 @@
     <title>mondo</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
-        g#load .line {
+        text.label {
+            font-size: small;
+        }
+
+        g.metric .line {
             fill: none;
             stroke-width: 2px;
             stroke: steelblue;
@@ -28,131 +32,139 @@
 
 <body>
     <script>
-        let now = Date.now();
+        const baseUri = "/metrics";
+        d3.json(`${baseUri}`).then(render);
 
-        const margin = { top: 20, right: 40, bottom: 20, left: 40 },
-            width = 1200 - margin.left - margin.right,
-            height = 300 - margin.top - margin.bottom,
-            duration = 1000, // Update interval in ms
-            n = 20;          // Number of data points
+        function render(metrics) {
+            Object.entries(metrics).map(([name, values]) => {
+                const uri = `${baseUri}/${name}`;
+                const labels = Object.keys(values);
 
-        // We want our "window" to hold points 1..n; point 0 will be drawn
-        // outside of the window to the left and point n+1 will be drawn outside
-        // of the window to the right; flipping that (because, time), we want
-        // to clamp the display domain to t-n..t-1
-        //
-        // NB for our _initial_ scale we're going to "pretend" that it's one
-        // second in the past to avoid a 1-second "stutter" of the x-axis
-        const x = d3.scaleTime()
-            .domain([now - (n + 1) * duration, now - 2 * duration])
-            .range([0, width]);
+                const margin = { top: 20, right: 40, bottom: 20, left: 40 },
+                    width = 1200 - margin.left - margin.right,
+                    height = 300 - margin.top - margin.bottom,
+                    duration = 1000, // Update interval in ms
+                    n = 20;          // Number of data points
 
-        const y = d3.scaleLinear()
-            .domain([0, 0]) // Initial domain (will update dynamically)
-            .range([height, 0]);
+                // We want our "window" to hold points 1..n; point 0 will be drawn
+                // outside of the window to the left and point n+1 will be drawn outside
+                // of the window to the right; flipping that (because, time), we want
+                // to clamp the display domain to t-n..t-1
+                //
+                // NB for our _initial_ scale we're going to "pretend" that it's one
+                // second in the past to avoid a 1-second "stutter" of the x-axis
+                const then = Date.now() - duration;
+                const x = d3.scaleTime()
+                    .domain([then - n * duration, then - 1 * duration])
+                    .range([0, width]);
 
-        // Line generator
-        const line = d3.line()
-            .curve(d3.curveBasis)
-            .x((d) => x(d.time))
-            .y((d) => y(d.value))
-            .defined(d => !isNaN(d.value)); // Omit NaN values
+                const y = d3.scaleLinear()
+                    .domain([0, 0]) // Initial domain (will update dynamically)
+                    .range([height, 0]);
 
-        // Create SVG
-        const svg = d3.select("body").append("svg")
-            .attr("width", width + margin.left + margin.right)
-            .attr("height", height + margin.top + margin.bottom)
-            .append("g")
-            .attr("transform", `translate(${margin.left},${margin.top})`);
+                // Line generator
+                const line = d3.line()
+                    .curve(d3.curveBasis)
+                    .x((d) => x(d.time))
+                    .y((d) => y(d.value))
+                    .defined(d => !isNaN(d.value)); // Omit NaN values
 
-        // Clipping mask for scrolling effect
-        const clip = svg.append("defs").append("clipPath")
-            .attr("id", "clip")
-            .append("rect")
-            .attr("width", width)
-            .attr("height", height);
+                // Create SVG
+                const svg = d3.select("body").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", `translate(${margin.left},${margin.top})`);
 
-        // X-Axis
-        const xAxis = svg.append("g")
-            .attr("class", "x-axis")
-            .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(x));
+                svg.append("text")
+                    .attr("class", "label")
+                    .text(`${name}`);
 
-        // Y-Axis
-        const yAxis = svg.append("g")
-            .attr("class", "y-axis")
-            .call(d3.axisLeft(y));
+                // Clipping mask for scrolling effect
+                const clip = svg.append("defs").append("clipPath")
+                    .attr("id", "clip")
+                    .append("rect")
+                    .attr("width", width)
+                    .attr("height", height);
 
-        // Metadata about this particular metric
-        // TODO these should be fetched dynamically at startup
-        const name = "load";
-        const uri = "/metrics/load";
-        const labels = ["1m", "5m", "15m"];
-
-        // Container for the lines
-        const g = svg.append("g")
-            .attr("clip-path", "url(#clip)")
-            .append("g")
-            .attr("class", "metric")
-            .attr("id", `${name}`);
-
-        g.selectAll("path")
-            .data(labels.map(() => []))
-            .join("path")
-            .attr("class", "line")
-            .attr("id", (d, i) => `_${labels[i]}`)
-            .attr("d", line)
-            .call(tick, g);
-
-        function tick(paths, g) {
-            d3.json(`${uri}`).then(function (result) {
-                now = Date.now();
-
-                const data = paths.data();
-                data.map((d, i) => {
-                    const value = result[labels[i]];
-                    d.push({
-                        time: now, value: value
-                    })
-                });
-
-                // draw the new point
-                g.selectAll(".line")
-                    .attr("d", line);
-
-                // reset our transform before adjusting domains
-                g.attr("transform", null);
-
-                // adjust the y axis
-                y.domain([0, d3.max(data.flat(), d => d.value) * 1.1]);
-                yAxis.transition()
-                    .duration(duration)
-                    .ease(d3.easeLinear)
-                    .call(d3.axisLeft(y));
-
-                // adjust the x axis
-                x.domain([now - n * duration, now - duration]);
-                xAxis.transition()
-                    .duration(duration)
-                    .ease(d3.easeLinear)
+                // X-Axis
+                const xAxis = svg.append("g")
+                    .attr("class", "x-axis")
+                    .attr("transform", `translate(0, ${height})`)
                     .call(d3.axisBottom(x));
 
-                // ... and slide the whole thing to the left
-                g.transition()
-                    .duration(duration)
-                    .ease(d3.easeLinear)
-                    .attr("transform", `translate(${x(now - (n + 1) * duration)})`)
-                    .on("end", () => {
-                        // pop all the old data points off the front
-                        data.map((d) => {
-                            while (d.length > 0 && d[0].time < (now - (n + 1) * duration)) {
-                                d.shift();
-                            }
+                // Y-Axis
+                const yAxis = svg.append("g")
+                    .attr("class", "y-axis")
+                    .call(d3.axisLeft(y));
+
+                // Container for the lines
+                const g = svg.append("g")
+                    .attr("clip-path", "url(#clip)")
+                    .append("g")
+                    .attr("class", "metric")
+                    .attr("id", `${name}`);
+
+                g.selectAll("path")
+                    .data(labels.map(() => []))
+                    .join("path")
+                    .attr("class", "line")
+                    .attr("id", (d, i) => `_${labels[i]}`)
+                    .attr("d", line)
+                    .call(tick, g);
+
+                function tick(paths, g) {
+                    d3.json(`${uri} `).then((result) => {
+                        const now = Date.now();
+
+                        const data = paths.data();
+                        data.map((d, i) => {
+                            const value = result[labels[i]];
+                            d.push({
+                                time: now, value: value
+                            })
                         });
 
-                        // schedule the next tick
-                        tick(paths, g);
+                        // draw the new point
+                        g.selectAll(".line")
+                            .attr("d", line);
+
+                        // reset our transform before adjusting domains
+                        g.attr("transform", null);
+
+                        // adjust the y axis
+                        y.domain([0, d3.max(data.flat(), d => d.value) * 1.1]);
+                        yAxis.transition()
+                            .duration(duration)
+                            .ease(d3.easeLinear)
+                            .call(d3.axisLeft(y));
+
+                        // adjust the x axis
+                        x.domain([now - n * duration, now - duration]);
+                        xAxis.transition()
+                            .duration(duration)
+                            .ease(d3.easeLinear)
+                            .call(d3.axisBottom(x));
+
+                        // ... and slide the whole thing to the left
+                        g.transition()
+                            .duration(duration)
+                            .ease(d3.easeLinear)
+                            .attr("transform", `translate(${x(now - (n + 1) * duration)
+                                })`)
+                            .on("end", () => {
+                                // pop all the old data points off the front
+                                data.map((d) => {
+                                    while (d.length > 0 && d[0].time < (now - (n + 1) * duration)) {
+                                        d.shift();
+                                    }
+                                });
+
+                                // schedule the next tick
+                                tick(paths, g);
+                            });
                     });
+                }
             });
         }
     </script>
