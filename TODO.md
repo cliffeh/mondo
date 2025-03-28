@@ -10,3 +10,5 @@
 * better chart legends
 * signal handling (`Ctrl-C` breakage)
 * do some debug/trace logging in places
+* figure out z-axis for rollover highlighting (bring to front)
+* signal handling (Quart doesn't like Ctrl-C with clients attached)
