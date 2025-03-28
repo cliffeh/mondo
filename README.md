@@ -36,5 +36,5 @@ Note that there could be an arbitrary number of points outside of the frame.
 
 ## References
 
-* <https://flask.palletsprojects.com/en/stable/tutorial/views/>
+* <https://quart.palletsprojects.com/en/latest/index.html>
 * <https://gist.github.com/mbostock/1642989>

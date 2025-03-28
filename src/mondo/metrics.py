@@ -1,6 +1,7 @@
 import asyncio
 import os
-
+import typing as t
+from functools import wraps
 from quart import Blueprint, request, websocket
 
 from . import config
@@ -8,12 +9,22 @@ from . import config
 bp = Blueprint("metrics", __name__, url_prefix="/metrics")
 
 
+def websocket_stream(fetch: t.Callable):
+    async def inner():
+        try:
+            while True:
+                await websocket.send_json(fetch())
+                await asyncio.sleep(config.TICK_DURATION_S)
+        except asyncio.CancelledError:
+            # Handle disconnection here
+            pass  # TODO maybe log something?
+
+    return inner
+
+
 @bp.route("")
 def get_metrics() -> dict[str, dict[str, float]]:
     return {"load": get_load(), "temp": get_temp()}
-
-
-loads: list[dict[str, float]] = []
 
 
 @bp.route("/load")
@@ -23,15 +34,7 @@ def get_load() -> dict[str, float]:
     return {"1m": la[0], "5m": la[1], "15m": la[2]}
 
 
-@bp.websocket("/load")
-async def get_load_ws():
-    try:
-        while True:
-            await websocket.send_json(get_load())
-            await asyncio.sleep(config.TICK_DURATION_S)
-    except asyncio.CancelledError:
-        # Handle disconnection here
-        pass  # TODO maybe log something?
+bp.add_websocket("/load", "get_load_ws", websocket_stream(get_load))
 
 
 @bp.route("/temp")
@@ -52,12 +55,4 @@ def get_temp() -> dict[str, float]:
             return temps
 
 
-@bp.websocket("/temp")
-async def get_temp_ws():
-    try:
-        while True:
-            await websocket.send_json(get_temp())
-            await asyncio.sleep(config.TICK_DURATION_S)
-    except asyncio.CancelledError:
-        # Handle disconnection here
-        pass  # TODO maybe log something?
+bp.add_websocket("/temp", "get_temp_ws", websocket_stream(get_temp))

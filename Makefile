@@ -25,6 +25,10 @@ lint:  ## run all linters (black, isort, mypy)
 	@$(MYPY) src
 .PHONY: lint
 
+routes:  $(QUART)  ## list routes
+	@$(QUART) --app mondo routes
+.PHONY: routes
+
 serve: $(QUART)  ## run a hot-reloading development server
 	@$(QUART)  --debug --app mondo run --host localhost --port 2505 --reload
 .PHONY: serve
