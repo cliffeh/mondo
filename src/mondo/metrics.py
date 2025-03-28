@@ -27,6 +27,9 @@ def get_metrics() -> dict[str, dict[str, float]]:
     return {"load": get_load(), "temp": get_temp()}
 
 
+bp.add_websocket("", "get_metrics_ws", websocket_stream(get_metrics))
+
+
 @bp.route("/load")
 def get_load() -> dict[str, float]:
     """Get system load average"""
