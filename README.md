@@ -1,6 +1,6 @@
 # mondo
 
-> _It's got what plants crave_
+> _it's got what plants crave_
 
 Mondo is a lightweight monitoring/graphing utility. It's meant for displaying
 "live" system stats in a browser.
