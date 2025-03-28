@@ -29,6 +29,8 @@ In this example, time `t=9` (i.e., `now()`, drawn off to the right and then
 transitioned into the frame), the window diplays time `[t-n..t-1]`, with time
 `t-(n+1)` transitioned out of the frame to the left.
 
+Note that there could be an arbitrary number of points outside of the frame.
+
 ## References
 
 * <https://flask.palletsprojects.com/en/stable/tutorial/views/>
