@@ -11,7 +11,10 @@ Do `make serve`, and then take a peek at <http://localhost:2505>.
 
 ## Development
 
-Take a look at `make help` for the various build targets...and then Dig In!
+Take a look at `make help` for the various build targets.
+
+[TODO.md](TODO.md) is where I've been trying to maintain a list of the things I'd like to
+get TODONE.
 
 ## Notes
 
