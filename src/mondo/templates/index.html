@@ -62,7 +62,9 @@
 
             // NB enables filtering and ordering of keys per-metric
             filters = {
-                load: ["1m", "5m", "15m"]
+                load: ["1m", "5m", "15m"],
+                // single-line view for x86 platform
+                // temp: ["x86_pkg_temp"],
             };
 
         d3.json(`${baseUri}`).then((metrics) => Object.entries(metrics).map(render));
