@@ -72,15 +72,17 @@
         // ref: https://stackoverflow.com/questions/22431751/websocket-how-to-automatically-reconnect-after-it-dies
         function connect(uri, onmessage) {
             let ws = new WebSocket(uri);
+
             ws.onmessage = onmessage;
 
             ws.onclose = (ev) => {
-                console.log("Socket is closed. Reconnect will be attempted in 1 second.", ev.reason);
+                // console.log("Socket is closed. Reconnect will be attempted in 1 second.", ev.reason);
                 setTimeout(() => connect(uri, onmessage), 1000);
             };
 
-            ws.onerror = (ev) => {
-                console.error("Socket encountered error:", err.message, "Closing socket");
+            ws.onerror = (ev, err) => {
+                console.log(err);
+                // console.error("Socket encountered error:", ev.message, "Closing socket");
                 ws.close();
             }
         }

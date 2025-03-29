@@ -1,6 +1,6 @@
 from quart import Quart, render_template
 
-from .metrics import bp as metrics_bp
+from .api import bp as metrics_bp
 from .tasks import update_metrics
 
 
