@@ -60,11 +60,13 @@
             t = (+q.get("t") || 1000),
             baseUri = "/metrics",
 
-            // NB enables filtering and ordering of keys per-metric
+            // Enables filtering and ordering of keys per-metric
             filters = {
                 load: ["1m", "5m", "15m"],
                 // single-line view for x86 platform
                 // temp: ["x86_pkg_temp"],
+                // don't show the `foo` metric at all
+                // foo: []
             };
 
         // ref: https://stackoverflow.com/questions/22431751/websocket-how-to-automatically-reconnect-after-it-dies
@@ -156,11 +158,15 @@
                 .attr("dx", 10)
                 .text((d) => d)
                 .on("mouseover", (e, d) => {
-                    d3.selectAll(`#_${d},._${d}`)
-                        .attr("style", "stroke: red; opacity: 1.0");
+                    // Make everything fairly transparent
+                    svg.selectAll(".key,.line")
+                        .attr("style", "opacity: 0.2");
+                    // ...except for the specific one we want to highlight
+                    svg.selectAll(`#_${d},._${d}`)
+                        .attr("style", "opacity: 1.0");
                 })
                 .on("mouseout", (e, d) => {
-                    d3.selectAll(`#_${d},._${d}`)
+                    svg.selectAll(".key,.line")
                         .attr("style", null);
                 });
 
