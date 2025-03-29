@@ -99,23 +99,6 @@
                 return [{ time: then, value: values[label] }];
             });
 
-            connect(uri, (ev) => {
-                const now = Date.now();
-                const values = JSON.parse(ev.data);
-                labels.map((label, i) => {
-                    data[i].push({ time: now, value: values[label] });
-                    // pop all the old data points off the front
-                    // NB n+1 probably _should_ be fine, but in practice leaving
-                    //    some extra data points on the front reduces jerkiness
-                    while (data[i].length > 0 && data[i][0].time < (now - (n + 2) * t)) {
-                        data[i].shift();
-                    }
-                });
-            });
-
-
-            // TODO handle reconnect on close
-
             // We want our "window" to hold points 1..n; point 0 will be drawn
             // outside of the window to the left and point n+1 will be drawn outside
             // of the window to the right; flipping that (because, time), we want
@@ -127,6 +110,21 @@
             const y = d3.scaleLinear()
                 .domain([0, 0]) // Initial domain (will update dynamically)
                 .range([h, 0]);
+
+            connect(uri, (ev) => {
+                const now = Date.now();
+                const values = JSON.parse(ev.data);
+                labels.map((label, i) => {
+                    data[i].push({ time: now, value: values[label] });
+                    // pop all the old data points off the front
+                    // NB in practice, leaving an extra seconds' worth of data
+                    //    points reduces jerkiness/artifacting
+                    const earliest = x.domain()[0] - t;
+                    while (data[i].length > 0 && data[i][0].time < earliest) {
+                        data[i].shift();
+                    }
+                });
+            });
 
             // Line generator
             const line = d3.line()
