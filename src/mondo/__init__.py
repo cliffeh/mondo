@@ -26,7 +26,7 @@ def create_app(test_config=None):
     @app.route("/index.html")
     @app.route("/", strict_slashes=False)
     async def index():
-        return await render_template("index.html")
+        return await render_template("index.html.j2", context=app.config)
 
     app.register_blueprint(metrics_bp)
 

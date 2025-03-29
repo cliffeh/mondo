@@ -50,24 +50,24 @@
 
         // Globals
         const margin = { top: 20, right: 40, bottom: 20, left: 40 },
+            baseUri = "/metrics",
             // Width of each chart
             w = (+q.get("w") || 800) - margin.left - margin.right,
             // Height of each chart
             h = (+q.get("h") || 200) - margin.top - margin.bottom,
             // Number of data points
-            n = (+q.get("n") || 20),
+            n = (+q.get("n") || 60),
             // Update interval in ms
-            t = (+q.get("t") || 1000),
-            baseUri = "/metrics",
+            t = (+q.get("t") || {{ context.TICK_DURATION_S * 1000 }})
 
-            // Enables filtering and ordering of keys per-metric
-            filters = {
-                load: ["1m", "5m", "15m"],
-                // single-line view for x86 platform
-                // temp: ["x86_pkg_temp"],
-                // don't show the `foo` metric at all
-                // foo: []
-            };
+        // Enables filtering and ordering of keys per-metric
+        filters = {
+            load: ["1m", "5m", "15m"],
+            // single-line view for x86 platform
+            // temp: ["x86_pkg_temp"],
+            // don't show the `foo` metric at all
+            // foo: []
+        };
 
         // ref: https://stackoverflow.com/questions/22431751/websocket-how-to-automatically-reconnect-after-it-dies
         function connect(uri, onmessage) {
