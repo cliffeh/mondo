@@ -2,6 +2,7 @@ import asyncio
 import os
 import typing as t
 from collections import deque
+
 from quart import Blueprint, websocket
 
 from . import config

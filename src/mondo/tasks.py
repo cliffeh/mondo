@@ -1,7 +1,8 @@
-import time
-from .metrics import metrics, get_load, get_temp
 import asyncio
+import time
+
 from . import config
+from .metrics import get_load, get_temp, metrics
 
 update_map = {
     "load": get_load,
