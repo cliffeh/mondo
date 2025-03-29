@@ -79,13 +79,12 @@
             ws.onmessage = onmessage;
 
             ws.onclose = (ev) => {
-                // console.log("Socket is closed. Reconnect will be attempted in 1 second.", ev.reason);
+                console.log("Socket is closed. Reconnect will be attempted in 1 second.", ev.reason);
                 setTimeout(() => connect(uri, onmessage), duration);
             };
 
             ws.onerror = (ev, err) => {
-                console.log(err);
-                // console.error("Socket encountered error:", ev.message, "Closing socket");
+                console.error("Socket encountered error:", err, "Closing socket");
                 ws.close();
             }
         }
