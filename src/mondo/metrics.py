@@ -1,16 +1,21 @@
 import asyncio
 import os
 import typing as t
-from functools import wraps
-
-from quart import Blueprint, request, websocket
+from collections import deque
+from quart import Blueprint, websocket
 
 from . import config
 
 bp = Blueprint("metrics", __name__, url_prefix="/metrics")
 
+metrics: dict[str, deque] = {
+    name: deque([], maxlen=config.MAX_POINTS) for name in ["load", "temp"]
+}
+
 
 def websocket_stream(fetch: t.Callable):
+    """A wrapper for streaming metrics over websockets"""
+
     async def inner():
         try:
             while True:
@@ -25,6 +30,7 @@ def websocket_stream(fetch: t.Callable):
 
 @bp.route("")
 def get_metrics() -> dict[str, dict[str, float]]:
+    """Get all metrics"""
     return {"load": get_load(), "temp": get_temp()}
 
 

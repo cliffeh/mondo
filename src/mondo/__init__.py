@@ -1,6 +1,7 @@
 from quart import Quart, render_template
 
 from .metrics import bp as metrics_bp
+from .tasks import update_metrics
 
 
 def create_app(test_config=None):
@@ -16,6 +17,11 @@ def create_app(test_config=None):
     else:
         # load the test config if passed in
         app.config.from_mapping(test_config)
+
+    # start collecting metrics
+    @app.before_serving
+    async def startup():
+        app.add_background_task(update_metrics)
 
     @app.route("/index.html")
     @app.route("/", strict_slashes=False)
