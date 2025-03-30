@@ -66,9 +66,11 @@
         // Enables filtering and ordering of keys per-metric
         const filters = {
             load: ["1m", "5m", "15m"],
-            // single-line view for x86 platform
+
+            // example: single-line view for x86 platform
             // temp: ["x86_pkg_temp"],
-            // don't show the `foo` metric at all
+
+            // example: don't show the `foo` metric at all
             // foo: []
         };
 
@@ -91,17 +93,18 @@
 
         d3.json(`${baseUri}`).then((metrics) => Object.entries(metrics).map(render));
 
-        function render([name, values]) {
+        function render([name, metric]) {
             const uri = `${baseUri}/${name}`;
-            const labels = filters[name] || Object.keys(values);
+            const labels = filters[name] || Object.keys(metric.values);
             if (labels.length == 0) return; // we don't have anything to show!
+
+            const data = labels.map((label) => {
+                return [{ time: metric.time, value: metric.values[label] }];
+            });
 
             // NB for our _initial_ scale we're going to "pretend" that it's one
             // second in the past to avoid a 1-second "stutter" of the x-axis
             const then = Date.now() - 1 * duration;
-            const data = labels.map((label) => {
-                return [{ time: then, value: values[label] }];
-            });
 
             // We want our "window" to hold points 1..n; point 0 will be drawn
             // outside of the window to the left and point n+1 will be drawn outside
@@ -116,10 +119,12 @@
                 .range([h, 0]);
 
             connect(uri, (ev) => {
+                // for updates, we're going to ignore the time the the server
+                // gave us and just use what we _think_ we know now() is
                 const now = Date.now();
-                const values = JSON.parse(ev.data);
+                const metric = JSON.parse(ev.data);
                 labels.map((label, i) => {
-                    data[i].push({ time: now, value: values[label] });
+                    data[i].push({ time: now, value: metric.values[label] });
                     // pop all the old data points off the front
                     // NB in practice, leaving an extra seconds' worth of data
                     //    points reduces jerkiness/artifacting

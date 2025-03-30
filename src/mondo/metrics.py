@@ -1,7 +1,12 @@
 import os
 from collections import deque
-import typing as t
 from . import config
+
+
+# ring buffer for storing the last MAX_POINTS values
+store: dict[str, deque[dict[str, dict[str, float]]]] = {
+    name: deque([], maxlen=config.MAX_POINTS) for name in config.ENABLED_METRICS
+}
 
 
 def load() -> dict[str, float]:
@@ -27,10 +32,8 @@ def temp() -> dict[str, float]:
             return temps
 
 
-metrics: dict[str, t.Callable] = {
+"""map of metric name => collection function"""
+ALL_METRICS = {
     "load": load,
     "temp": temp,
-}
-store: dict[str, deque[dict[float, float]]] = {
-    name: deque([], maxlen=config.MAX_POINTS) for name in metrics.keys()
 }
