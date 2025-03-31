@@ -1,7 +1,7 @@
 import asyncio
 import typing as t
 
-from quart import Blueprint, websocket
+from quart import Blueprint, request, websocket
 
 from . import config, metrics, tasks
 
@@ -25,11 +25,19 @@ def websocket_stream(name: str):
 
 
 def http_route(name: str):
-    """A wrapper for retrieving metrics via http"""
+    """A wrapper for retrieving metrics via http. With no arguments, this will
+    return the latest known data point for the given metric. If the request is
+    provided with a `?t=value` argument where `value` is a timestamp in
+    milliseconds since the epoch (i.e., a javascript `Date`), this will return
+    a list of all known datapoints on or after `t`."""
 
     async def inner():
         values = metrics.store[name]
-        return values[len(values) - 1]
+        t = int(request.args.get("t", 0))
+        if t == 0:
+            return values[len(values) - 1]
+        else:
+            return [value for value in values if value["time"] >= t]
 
     return inner
 

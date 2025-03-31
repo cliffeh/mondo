@@ -91,22 +91,24 @@
             }
         }
 
+        // NB for our _initial_ scale we're going to "pretend" that it's one
+        // second in the past to avoid a 1-second "stutter" of the x-axis
+        const then = Date.now() - 1 * duration;
+
         // do initial load of metrics via http; subsequent updates will happen 
         // via persistent websocket connection
-        d3.json(`${baseUri}`).then((metrics) => Object.entries(metrics).map(render));
+        d3.json(`${baseUri}?t=${then - (n + 1) * duration}`).then((metrics) => Object.entries(metrics).map(render));
 
-        function render([name, metric]) {
+        function render([name, metric_list]) {
             const uri = `${baseUri}/${name}`;
-            const labels = filters[name] || Object.keys(metric.values);
+            const labels = filters[name] || Object.keys(metric_list[0].values);
             if (labels.length == 0) return; // we don't have anything to show!
 
             const data = labels.map((label) => {
-                return [{ time: metric.time, value: metric.values[label] }];
+                return metric_list.map((metric) => {
+                    return { time: metric.time, value: metric.values[label] };
+                })
             });
-
-            // NB for our _initial_ scale we're going to "pretend" that it's one
-            // second in the past to avoid a 1-second "stutter" of the x-axis
-            const then = Date.now() - 1 * duration;
 
             // We want our "window" to hold points 1..n; point 0 will be drawn
             // outside of the window to the left and point n+1 will be drawn outside
