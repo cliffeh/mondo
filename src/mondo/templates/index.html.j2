@@ -91,6 +91,8 @@
             }
         }
 
+        // do initial load of metrics via http; subsequent updates will happen 
+        // via persistent websocket connection
         d3.json(`${baseUri}`).then((metrics) => Object.entries(metrics).map(render));
 
         function render([name, metric]) {

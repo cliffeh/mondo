@@ -3,7 +3,7 @@ import typing as t
 
 from quart import Blueprint, websocket
 
-from . import config, metrics
+from . import config, metrics, tasks
 
 bp = Blueprint("metrics", __name__, url_prefix="/metrics")
 
@@ -11,15 +11,15 @@ bp = Blueprint("metrics", __name__, url_prefix="/metrics")
 def websocket_stream(name: str):
     """A wrapper for streaming metrics over websockets"""
 
-    values = metrics.store[name]
-
     async def inner():
+        queue = asyncio.Queue()
+        tasks.ws_queues[name].append(queue)
         try:
             while True:
-                await websocket.send_json(values[len(values) - 1])
-                await asyncio.sleep(config.TICK_DURATION_S)
+                value = await queue.get()
+                await websocket.send_json(value)
         except asyncio.CancelledError:
-            pass  # TODO maybe log something?
+            tasks.ws_queues[name].remove(queue)
 
     return inner
 
@@ -27,9 +27,8 @@ def websocket_stream(name: str):
 def http_route(name: str):
     """A wrapper for retrieving metrics via http"""
 
-    values = metrics.store[name]
-
     async def inner():
+        values = metrics.store[name]
         return values[len(values) - 1]
 
     return inner
