@@ -123,12 +123,9 @@
                 .range([h, 0]);
 
             connect(uri, (ev) => {
-                // for updates, we're going to ignore the time the the server
-                // gave us and just use what we _think_ we know now() is
-                const now = Date.now();
                 const metric = JSON.parse(ev.data);
                 labels.map((label, i) => {
-                    data[i].push({ time: now, value: metric.values[label] });
+                    data[i].push({ time: metric.time, value: metric.values[label] });
                     // pop all the old data points off the front
                     // NB in practice, leaving an extra seconds' worth of data
                     //    points reduces jerkiness/artifacting
