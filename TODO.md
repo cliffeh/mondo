@@ -16,3 +16,4 @@
   * uptime
   * connected clients/queues
   * type/number of metrics collected
+* instance-specific configs
