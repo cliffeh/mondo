@@ -194,7 +194,7 @@
             // Y-Axis
             const yAxis = svg.append("g")
                 .attr("class", "y-axis")
-                .call(d3.axisLeft(y));
+                .call(d3.axisLeft(y).tickFormat(d3.format("~s")));
 
             // Container for the lines
             const g = svg.append("g")
@@ -225,7 +225,7 @@
                 yAxis.transition()
                     .duration(duration)
                     .ease(d3.easeLinear)
-                    .call(d3.axisLeft(y));
+                    .call(d3.axisLeft(y).tickFormat(d3.format("~s")));
 
                 // adjust the x axis
                 x.domain([now - n * duration, now - duration]);
