@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "mondo"
 version = "0.0.1"
-dependencies = ["quart==0.20.0"]
+dependencies = ["psutil==7.0.0", "quart==0.20.0"]
 requires-python = ">=3.8"
 authors = [{ name = "Cliff Snyder", email = "cliff.snyder@gmail.com" }]
 maintainers = [{ name = "Cliff Snyder", email = "cliff.snyder@gmail.com" }]
@@ -18,7 +18,7 @@ dev = ["black", "flake8", "mypy", "isort"] # pytest
 
 [tool.black]
 line-length = 88
-target-version = ['py38']
+target-version = ["py38"]
 
 [tool.isort]
 profile = "black"
