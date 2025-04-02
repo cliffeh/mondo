@@ -1,7 +1,7 @@
 import os
 from collections import deque
-from . import config
 
+from . import config
 
 # ring buffer for storing the last MAX_POINTS values
 store: dict[str, deque[dict[str, dict[str, float]]]] = {

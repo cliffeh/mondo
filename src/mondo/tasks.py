@@ -3,7 +3,6 @@ import time
 
 from . import config, metrics
 
-
 ws_queues: dict[str, list[asyncio.Queue]] = {
     name: [] for name in config.ENABLED_METRICS
 }

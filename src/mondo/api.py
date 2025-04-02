@@ -1,5 +1,4 @@
 import asyncio
-import typing as t
 
 from quart import Blueprint, request, websocket
 
