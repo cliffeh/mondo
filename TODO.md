@@ -1,8 +1,7 @@
 # TODO
 
-* more sensors (probably want to switch to using psutil)
+* more sensors
   * CPU
-  * memory
   * disk? (maybe not, or filtered by default)
 * make it "production-ready"
   * tests (of any kind lol)
@@ -17,3 +16,4 @@
   * connected clients/queues
   * type/number of metrics collected
 * instance-specific configs
+* different display type for memory stats (line graph isn't the best)

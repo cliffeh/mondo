@@ -1,6 +1,6 @@
 import os
 from collections import deque
-
+import psutil
 from . import config
 
 # ring buffer for storing the last MAX_POINTS values
@@ -13,6 +13,12 @@ def load() -> dict[str, float]:
     """Get system load average"""
     la = os.getloadavg()
     return {"1m": la[0], "5m": la[1], "15m": la[2]}
+
+
+def mem() -> dict[str, float]:
+    """Get system memory"""
+    mem = psutil.virtual_memory()
+    return mem._asdict()
 
 
 def temp() -> dict[str, float]:
@@ -35,5 +41,6 @@ def temp() -> dict[str, float]:
 """map of metric name => collection function"""
 ALL_METRICS = {
     "load": load,
+    "mem": mem,
     "temp": temp,
 }
